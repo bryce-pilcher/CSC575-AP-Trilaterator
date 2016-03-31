@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,13 +17,19 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private boolean wifiPermission = false;
+    private boolean wifiPermission = true;
+    ListView lv;
+    WifiManager wifi;
+    String wifis[];
+    WifiScanReceiver wifiReciever;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,9 +38,22 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        lv=(ListView)findViewById(R.id.listView);
+
+        wifi=(WifiManager)getSystemService(Context.WIFI_SERVICE);
+        wifiReciever = new WifiScanReceiver();
+        wifi.startScan();
+
+        registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
         String data = "No request";
 
-        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            wifiPermission = false;
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
+        } else{
+            getAPs();
+        }
 
         TextView textView = (TextView) findViewById(R.id.rssi_value);
         textView.setText(data);
@@ -46,6 +66,16 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    protected void onPause() {
+        unregisterReceiver(wifiReciever);
+        super.onPause();
+    }
+
+    protected void onResume() {
+        registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        super.onResume();
     }
 
     @Override
@@ -71,8 +101,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 0: {
                 // If request is cancelled, the result arrays are empty.
@@ -99,24 +128,31 @@ public class MainActivity extends AppCompatActivity {
     public void getAPs(){
         String data = "No WiFi Permission";
         if(wifiPermission) {
-            WifiManager wifiMan = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-            class WifiScanReceiver extends BroadcastReceiver {
-                public void onReceive(Context c, Intent intent) {
-                }
-            }
-            WifiScanReceiver wifiReciever = new WifiScanReceiver();
-            registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-            List<ScanResult> wifiScanList = wifiMan.getScanResults();
-            if(wifiScanList.size() > 0) {
-                data = wifiScanList.get(0).toString();
-            }
-            else{
-                data = "No APs in Range";
-            }
+            data = "Scan started";
+            wifi.startScan();
         }
 
         TextView textView = (TextView) findViewById(R.id.rssi_value);
         textView.setText(data);
+    }
+
+    public class WifiScanReceiver extends BroadcastReceiver {
+        public void onReceive(Context c, Intent intent) {
+            List<ScanResult> wifiScanList = wifi.getScanResults();
+            String data = "";
+            wifis = new String[wifiScanList.size()];
+
+            for(int i = 0; i < wifiScanList.size(); i++){
+                wifis[i] = ((wifiScanList.get(i)).toString());
+            }
+            if(wifiScanList.size() > 0){
+                data = "scanlist > 0";
+            } else{
+                data = wifiScanList.size() + "";
+            }
+            TextView textView = (TextView) findViewById(R.id.rssi_value);
+            textView.setText(data);
+            lv.setAdapter(new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,wifis));
+        }
     }
 }
