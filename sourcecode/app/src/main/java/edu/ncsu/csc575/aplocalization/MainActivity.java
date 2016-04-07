@@ -14,22 +14,30 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    public final static String AP_NAME = "edu.ncsu.csc575.aplocalization.APNAME";
     private boolean wifiPermission = true;
     ListView lv;
-    WifiManager wifi;
     String wifis[];
-    WifiScanReceiver wifiReciever;
+    //Receiver for wifi Scans
+    private WifiScanReceiver wifiReciever;
+    //Wifi Manager for starting scans and getting results.
+    private WifiManager wifi;
+    //AP to locate
+    private String ap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,13 +46,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        lv=(ListView)findViewById(R.id.listView);
-
-        wifi=(WifiManager)getSystemService(Context.WIFI_SERVICE);
+        wifi = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         wifiReciever = new WifiScanReceiver();
-        wifi.startScan();
-
         registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        lv=(ListView)findViewById(R.id.listView);
+        wifi.startScan();
 
         String data = "No request";
 
@@ -52,20 +58,29 @@ public class MainActivity extends AppCompatActivity {
             wifiPermission = false;
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
         } else{
+            Log.d(this.getClass().toString(), "Calling get APs");
             getAPs();
         }
 
         TextView textView = (TextView) findViewById(R.id.rssi_value);
         textView.setText(data);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+            public void onItemClick(AdapterView<?> arg0, View arg1,int position, long arg3) {
+                Snackbar.make(arg1, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                openScanMap(position);
             }
         });
+    }
+
+    public void openScanMap(int position){
+        Intent intent = new Intent(this, LocateActivity.class);
+        String apName = (lv.getItemAtPosition(position)).toString();
+        intent.putExtra(AP_NAME,apName);
+        wifi = null;
+        startActivity(intent);
     }
 
     protected void onPause() {
@@ -128,12 +143,17 @@ public class MainActivity extends AppCompatActivity {
     public void getAPs(){
         String data = "No WiFi Permission";
         if(wifiPermission) {
+            Log.d(this.getClass().toString(), "Starting scan");
             data = "Scan started";
-            wifi.startScan();
+            if(ap == null) {
+                Toast toast = Toast.makeText(this, "Please choose an AP", Toast.LENGTH_SHORT);
+                toast.show();
+            }
         }
 
         TextView textView = (TextView) findViewById(R.id.rssi_value);
         textView.setText(data);
+
     }
 
     public class WifiScanReceiver extends BroadcastReceiver {
@@ -141,18 +161,18 @@ public class MainActivity extends AppCompatActivity {
             List<ScanResult> wifiScanList = wifi.getScanResults();
             String data = "";
             wifis = new String[wifiScanList.size()];
-
-            for(int i = 0; i < wifiScanList.size(); i++){
-                wifis[i] = ((wifiScanList.get(i)).toString());
+            for (int i = 0; i < wifiScanList.size(); i++) {
+                wifis[i] = (wifiScanList.get(i).SSID) + " " + wifiScanList.get(i).BSSID;
             }
-            if(wifiScanList.size() > 0){
+            if (wifiScanList.size() > 0) {
                 data = "scanlist > 0";
-            } else{
+            } else {
                 data = wifiScanList.size() + "";
             }
             TextView textView = (TextView) findViewById(R.id.rssi_value);
             textView.setText(data);
-            lv.setAdapter(new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,wifis));
+            lv.setAdapter(new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, wifis));
         }
     }
-}
+
+    }
