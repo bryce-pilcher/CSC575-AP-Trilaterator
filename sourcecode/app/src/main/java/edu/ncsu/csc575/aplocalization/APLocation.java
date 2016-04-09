@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Bryce on 4/7/2016.
@@ -27,6 +28,8 @@ public class APLocation {
     private String ap;
     //Array of samples to be analyzed
     private List<Integer> rssiSamples;
+    //Cell that samples are being taken from
+    private Vertex currentCell;
     //Array of Samples already recorded
     private List<Sample> measurements;
     //Hashmap of possible locations by Sample
@@ -61,7 +64,8 @@ public class APLocation {
         this.sample = sample;
     }
 
-    public void unregisterReceiver(Context context) {
+    public void unregisterReceiver(Context mContext) {
+        Log.d(this.getClass().toString(), "Unregistering apReceiver");
         context.unregisterReceiver(apReciever);
     }
 
@@ -74,29 +78,59 @@ public class APLocation {
         return null;
     }
 
-    public void changeCell(Vertex cell){
-        if(rssiSamples != null && rssiSamples.size() > 0){
+    public Vertex changeCell(Vertex cell) {
+        locations = new HashMap<>();
+        if (rssiSamples != null && rssiSamples.size() > 0) {
             //find mode of rssi samples or lowest sample
-
+            int rssi = 1000;
+            //get min rssi sample
+            for (int r : rssiSamples) {
+                if (r < rssi) {
+                    rssi = r;
+                }
+            }
+            Sample s = new Sample(rssi, currentCell);
             //reset rssiSamples
-            //rssiSamples = new ArrayList<>();
-            //calculate distance and create
-            /*Sample s = new Sample(rssi,cell);
+            rssiSamples = new ArrayList<>();
+            currentCell = cell;
             measurements.add(s);
-            Sample m[] = (Sample[]) measurements.toArray();
-            for(int i = 0; i < m.length - 1; i++){
-                for(int j = i + 1; j < m.length; j++){
-                    Vertex[] vs = tri.findIntersections(m[i],m[j]);
-                    for(int k = 0; k < vs.length; k++) {
-                        if (!locations.containsKey(vs[k].toString())) {
-                            locations.put(vs[k].toString(), 1);
-                        } else {
-                            locations.put(vs[k].toString(), locations.get(vs[k].toString()) + 1);
+            Sample m[] = measurements.toArray(new Sample[measurements.size()]);
+            for (int i = 0; i < m.length - 1; i++) {
+                for (int j = i + 1; j < m.length; j++) {
+                    Vertex[] vs = tri.findIntersections(m[i], m[j]);
+                    for (int k = 0; k < vs.length; k++) {
+                        if (vs[k] != null) {
+                            String vertex = (int)(vs[k].getX()/s.CELL_SIZE) + " " + (int)(vs[k].getY()/s.CELL_SIZE);
+                            if (!locations.containsKey(vertex)) {
+                                locations.put(vertex, 1);
+                            } else {
+                                locations.put(vertex, locations.get(vertex) + 1);
+                            }
                         }
                     }
                 }
-            }*/
+            }
+        }else{
+            currentCell = cell;
         }
+        if (locations != null && locations.size() > 0) {
+            Set<String> keys = locations.keySet();
+
+            String mostLikelyLocation = "";
+            int max = 0;
+            for (String k : keys) {
+                if (locations.get(k) > max) {
+                    mostLikelyLocation = k;
+                    max = locations.get(k);
+                }
+                Log.d(this.getClass().toString(),k + " " + locations.get(k));
+            }
+            Toast toast = Toast.makeText(context, "Most likely Location " + (mostLikelyLocation), Toast.LENGTH_SHORT);
+            toast.show();
+            Log.d(this.getClass().toString(), "Most likely Location " + mostLikelyLocation);
+            return new Vertex(Double.valueOf(mostLikelyLocation.split(" ")[0]),Double.valueOf(mostLikelyLocation.split(" ")[1]));
+        }
+        return null;
     }
 
     private void storeSample(List<ScanResult> wifis){
