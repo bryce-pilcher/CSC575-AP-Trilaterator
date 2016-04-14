@@ -49,7 +49,23 @@ public class APLocation {
         this.ap = apName;
         apReciever = new WifiScanReceiver();
         apMan =(WifiManager)context.getSystemService(context.WIFI_SERVICE);
+
+        /**
+         * public static final String SCAN_RESULTS_AVAILABLE_ACTION
+         * Added in API level
+         * An access point scan has completed, and results are available from the supplicant. Call
+         * getScanResults() to obtain the results. EXTRA_RESULTS_UPDATED indicates if the scan was
+         * completed successfully.
+         * Constant Value: "android.net.wifi.SCAN_RESULTS"
+         */
         context.registerReceiver(apReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        /**
+         * public static final String EXTRA_RESULTS_UPDATED
+         * Added in API level 23
+         * Lookup key for a boolean representing the result of previous startScan() operation, reported with SCAN_RESULTS_AVAILABLE_ACTION.
+         * Constant Value: "resultsUpdated"
+         */
+
         rssiSamples = new ArrayList<>();
         measurements = new LinkedList<>();
         tri = new Trilateration();
@@ -153,22 +169,48 @@ public class APLocation {
 
     public class WifiScanReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
-            Log.d(this.getClass().toString(), "Received results.");
-            if(apMan == null){
-                Log.d(this.getClass().toString(),"apMan null");
-            }
-            List<ScanResult> wifiScanList = apMan.getScanResults();
-            String data = "";
-            if(wifiScanList.size() > 0){
-                Log.d(this.getClass().toString(), "Scan results");
-                if(sample) {
-                    sample = false;
-                    storeSample(wifiScanList);
+
+            /**
+             * public boolean getBooleanExtra (String name, boolean defaultValue)
+             * Added in API level 1
+             * Retrieve extended data from the intent.
+             * Parameters
+             * name	String: The name of the desired item.
+             * defaultValue	boolean: the value to be returned if no value of the desired type is stored with the given name.
+             * Returns
+             * boolean	the value of an item that previously added with putExtra() or the default value if none was found.
+             */
+
+            /**
+             * public static final String EXTRA_RESULTS_UPDATED
+             * Added in API level 23
+             * Lookup key for a boolean representing the result of previous startScan() operation, reported with SCAN_RESULTS_AVAILABLE_ACTION.
+             * Constant Value: "resultsUpdated"
+             */
+
+            if(intent.getBooleanExtra("EXTRA_RESULTS_UPDATED",false)){
+
+                Log.d(this.getClass().toString(),"EXTRA_RESULTS_UPDATED");
+
+                if(apMan == null){
+                    Log.d(this.getClass().toString(),"apMan null");
                 }
-            } else{
-                Log.d(this.getClass().toString(), "no scan results");
-                data = wifiScanList.size() + "";
+
+                List<ScanResult> wifiScanList = apMan.getScanResults();
+
+                String data = "";
+                if(wifiScanList.size() > 0){
+                    Log.d(this.getClass().toString(), "Scan results");
+                    if(sample) {
+                        sample = false;
+                        storeSample(wifiScanList);
+                    }
+                } else{
+                    Log.d(this.getClass().toString(), "no scan results");
+                    data = wifiScanList.size() + "";
+                }
             }
+            /*Log.d(this.getClass().toString(), "Received results.");*/
         }
     }
 }
