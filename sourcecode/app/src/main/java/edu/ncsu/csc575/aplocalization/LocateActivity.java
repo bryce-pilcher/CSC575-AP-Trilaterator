@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 public class LocateActivity extends AppCompatActivity {
     APLocation apl;
-    String apName;
+    String apNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,11 +24,13 @@ public class LocateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_locate);
 
         Intent intent = getIntent();
-        apName= intent.getStringExtra(MainActivity.AP_NAME);
+        apNames= intent.getStringExtra("SELECTED_ACCESS_POINT_NAMES");
 
-        Toast toast = Toast.makeText(this, apName.split(" ")[1], Toast.LENGTH_SHORT);
+        Log.d("Yep",apNames);
+
+        Toast toast = Toast.makeText(this, apNames.split(" ")[1], Toast.LENGTH_SHORT);
         toast.show();
-        apl = new APLocation(this, apName.split(" ")[1]);
+        apl = new APLocation(this, apNames.split(" ")[1]);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -192,7 +194,7 @@ public class LocateActivity extends AppCompatActivity {
     }
 
     protected void onResume() {
-        apl = new APLocation(this, apName.split(" ")[1]);
+        apl = new APLocation(this, apNames.split(" ")[1]);
         super.onResume();
     }
 

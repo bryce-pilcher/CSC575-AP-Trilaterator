@@ -15,11 +15,13 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     public final static String AP_NAME = "edu.ncsu.csc575.aplocalization.APNAME";
     private boolean wifiPermission = true;
     ListView lv;
+    FloatingActionButton floatingActionButton;
     String wifis[];
     //Receiver for wifi Scans
     private WifiScanReceiver wifiReciever;
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         wifiReciever = new WifiScanReceiver();
         registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         lv=(ListView)findViewById(R.id.listView);
+        floatingActionButton = (FloatingActionButton)findViewById(R.id.fab);
         wifi.startScan();
 
         String data = "No request";
@@ -65,14 +69,14 @@ public class MainActivity extends AppCompatActivity {
         TextView textView = (TextView) findViewById(R.id.rssi_value);
         textView.setText(data);
 
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+/*        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1,int position, long arg3) {
                 Snackbar.make(arg1, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 openScanMap(position);
             }
-        });
+        })*/
     }
 
     public void openScanMap(int position){
@@ -94,6 +98,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -110,6 +124,26 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+
+        if (id == R.id.action_localize) {
+            Intent intent = new Intent(this, LocateActivity.class);
+            lv.getCheckedItemPositions();
+            String selected = "";
+            int countChoice = lv.getCount();
+
+            SparseBooleanArray sparseBooleanArray = lv.getCheckedItemPositions();
+            for (int i = 0; i < countChoice; i++) {
+                if (sparseBooleanArray.get(i)) {
+                    selected += lv.getItemAtPosition(i).toString() + ",";
+                }
+
+                intent.putExtra("SELECTED_ACCESS_POINTS", selected);
+                Toast toast = Toast.makeText(this, selected, Toast.LENGTH_SHORT);
+                toast.show();
+                wifi = null;
+                /*startActivity(intent);*/
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -158,6 +192,26 @@ public class MainActivity extends AppCompatActivity {
 
     public class WifiScanReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
+            /**
+             * public boolean getBooleanExtra (String name, boolean defaultValue)
+             * Added in API level 1
+             * Retrieve extended data from the intent.
+             * Parameters
+             * name	String: The name of the desired item.
+             * defaultValue	boolean: the value to be returned if no value of the desired type is stored with the given name.
+             * Returns
+             * boolean	the value of an item that previously added with putExtra() or the default value if none was found.
+             */
+
+            /**
+             * public static final String EXTRA_RESULTS_UPDATED
+             * Added in API level 23
+             * Lookup key for a boolean representing the result of previous startScan() operation, reported with SCAN_RESULTS_AVAILABLE_ACTION.
+             * Constant Value: "resultsUpdated"
+             */
+
+            if(intent.getBooleanExtra("EXTRA_RESULTS_UPDATED",false)){
+            }
             List<ScanResult> wifiScanList = wifi.getScanResults();
             String data = "";
             wifis = new String[wifiScanList.size()];
@@ -171,7 +225,8 @@ public class MainActivity extends AppCompatActivity {
             }
             TextView textView = (TextView) findViewById(R.id.rssi_value);
             textView.setText(data);
-            lv.setAdapter(new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, wifis));
+            lv.setAdapter(new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_multiple_choice, wifis));
+            lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         }
     }
 
