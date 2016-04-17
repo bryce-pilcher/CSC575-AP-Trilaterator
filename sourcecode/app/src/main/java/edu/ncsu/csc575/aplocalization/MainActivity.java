@@ -127,23 +127,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_localize) {
-            Intent intent = new Intent(this, LocateActivity.class);
+            Intent intent = new Intent(getApplicationContext(), LocateActivity.class);
             lv.getCheckedItemPositions();
             String selected = "";
             int countChoice = lv.getCount();
+            startActivity(intent);
 
-            SparseBooleanArray sparseBooleanArray = lv.getCheckedItemPositions();
+/*            SparseBooleanArray sparseBooleanArray = lv.getCheckedItemPositions();
             for (int i = 0; i < countChoice; i++) {
                 if (sparseBooleanArray.get(i)) {
                     selected += lv.getItemAtPosition(i).toString() + ",";
                 }
 
-                intent.putExtra("SELECTED_ACCESS_POINTS", selected);
+                *//*intent.putExtra("SELECTED_ACCESS_POINTS", selected);*//*
                 Toast toast = Toast.makeText(this, selected, Toast.LENGTH_SHORT);
                 toast.show();
                 wifi = null;
-                /*startActivity(intent);*/
-            }
+            }*/
         }
 
         return super.onOptionsItemSelected(item);
@@ -211,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
              */
 
             if(intent.getBooleanExtra("EXTRA_RESULTS_UPDATED",false)){
+                Log.d("EXTRA_RESULTS_UPDATED","EXTRA_RESULTS_UPDATED");
             }
             List<ScanResult> wifiScanList = wifi.getScanResults();
             String data = "";

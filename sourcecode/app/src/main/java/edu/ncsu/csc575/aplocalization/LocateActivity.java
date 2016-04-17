@@ -1,5 +1,9 @@
 package edu.ncsu.csc575.aplocalization;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -24,13 +28,14 @@ public class LocateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_locate);
 
         Intent intent = getIntent();
-        apNames= intent.getStringExtra("SELECTED_ACCESS_POINT_NAMES");
+       /* apNames= intent.getStringExtra("SELECTED_ACCESS_POINT_NAMES");*/
 
-        Log.d("Yep",apNames);
-
-        Toast toast = Toast.makeText(this, apNames.split(" ")[1], Toast.LENGTH_SHORT);
-        toast.show();
-        apl = new APLocation(this, apNames.split(" ")[1]);
+   /*     Toast toast = Toast.makeText(this, apNames.split(" ")[1], Toast.LENGTH_SHORT);
+        toast.show();*/
+        /*apl = new APLocation(this, apNames.split(" ")[1]);*/
+        ConfigureGridDialogFragment frag = new ConfigureGridDialogFragment();
+        FragmentManager fragmentManager = getFragmentManager();
+        frag.show(fragmentManager,"string");
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,8 +198,14 @@ public class LocateActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
     protected void onResume() {
-        apl = new APLocation(this, apNames.split(" ")[1]);
+      /*  apl = new APLocation(this, apNames.split(" ")[1]);*/
+
         super.onResume();
     }
 
@@ -224,5 +235,27 @@ public class LocateActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public class ConfigureGridDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setView(R.layout.configure_grid);
+            builder.setMessage("Grid Configuration")
+                    .setPositiveButton("Fire", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // FIRE ZE MISSILES!
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
     }
 }
