@@ -3,7 +3,6 @@ package edu.ncsu.csc575.aplocalization;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -18,24 +17,39 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 public class LocateActivity extends AppCompatActivity {
     APLocation apl;
-    String apNames;
+    List<String> apNames;
+    int[] cells;
+    final int GRID_SIZE = 18;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_locate);
+        apNames = new ArrayList<>();
+
+        cells = new int[]{R.id.c11, R.id.c12, R.id.c13, R.id.c21, R.id.c22, R.id.c23, R.id.c31,
+                R.id.c32, R.id.c33, R.id.c41, R.id.c42, R.id.c43, R.id.c51, R.id.c52, R.id.c53,
+                R.id.c61, R.id.c62, R.id.c63};
 
         Intent intent = getIntent();
-       /* apNames= intent.getStringExtra("SELECTED_ACCESS_POINT_NAMES");*/
+        String names = intent.getStringExtra(MainActivity.AP_NAMES);
 
-   /*     Toast toast = Toast.makeText(this, apNames.split(" ")[1], Toast.LENGTH_SHORT);
-        toast.show();*/
-        /*apl = new APLocation(this, apNames.split(" ")[1]);*/
-        ConfigureGridDialogFragment frag = new ConfigureGridDialogFragment();
+        for(String name : names.split(",")){
+            apNames.add(name.split(">")[1]);
+        }
+
+        Toast toast = Toast.makeText(this, apNames.get(0), Toast.LENGTH_SHORT);
+        toast.show();
+        apl = new APLocation(this, apNames);
+        /*ConfigureGridDialogFragment frag = new ConfigureGridDialogFragment();
         FragmentManager fragmentManager = getFragmentManager();
-        frag.show(fragmentManager,"string");
+        frag.show(fragmentManager,"string");*/
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -219,9 +233,18 @@ public class LocateActivity extends AppCompatActivity {
             }
         }
         v.setBackgroundColor(Color.parseColor("#000000"));
-        Vertex apLoc = apl.changeCell(center);
+        HashMap<String, Vertex> apLoc = apl.changeCell(center);
+
         if(apLoc != null) {
-            Log.d(this.getClass().toString(), apLoc.getX() + " " + apLoc.getY());
+            for (String ap : apNames) {
+                if (apLoc.get(ap) != null) {
+                    int x = (int) apLoc.get(ap).getX();
+                    int y = (int) apLoc.get(ap).getY();
+                    Log.d(this.getClass().toString(),  + x + " " + y);
+                    TextView tv = (TextView) findViewById(cells[((x-1)*3+(y-1))]);
+                    tv.setBackgroundResource(R.drawable.ap_cell);
+                }
+            }
         }
     }
 

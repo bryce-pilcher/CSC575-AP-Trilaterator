@@ -11,17 +11,13 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +26,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    public final static String AP_NAME = "edu.ncsu.csc575.aplocalization.APNAME";
+    public final static String AP_NAMES = "edu.ncsu.csc575.aplocalization.APNAMES";
     private boolean wifiPermission = true;
     ListView lv;
-    FloatingActionButton floatingActionButton;
     String wifis[];
     //Receiver for wifi Scans
     private WifiScanReceiver wifiReciever;
@@ -53,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         wifiReciever = new WifiScanReceiver();
         registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         lv=(ListView)findViewById(R.id.listView);
-        floatingActionButton = (FloatingActionButton)findViewById(R.id.fab);
         wifi.startScan();
 
         String data = "No request";
@@ -82,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     public void openScanMap(int position){
         Intent intent = new Intent(this, LocateActivity.class);
         String apName = (lv.getItemAtPosition(position)).toString();
-        intent.putExtra(AP_NAME,apName);
+        intent.putExtra(AP_NAMES,apName);
         wifi = null;
         startActivity(intent);
     }
@@ -131,19 +125,19 @@ public class MainActivity extends AppCompatActivity {
             lv.getCheckedItemPositions();
             String selected = "";
             int countChoice = lv.getCount();
-            startActivity(intent);
 
-/*            SparseBooleanArray sparseBooleanArray = lv.getCheckedItemPositions();
+            SparseBooleanArray sparseBooleanArray = lv.getCheckedItemPositions();
             for (int i = 0; i < countChoice; i++) {
                 if (sparseBooleanArray.get(i)) {
                     selected += lv.getItemAtPosition(i).toString() + ",";
                 }
-
-                *//*intent.putExtra("SELECTED_ACCESS_POINTS", selected);*//*
                 Toast toast = Toast.makeText(this, selected, Toast.LENGTH_SHORT);
-                toast.show();
+                //toast.show();
                 wifi = null;
-            }*/
+            }
+
+            intent.putExtra(AP_NAMES, selected);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -211,13 +205,13 @@ public class MainActivity extends AppCompatActivity {
              */
 
             if(intent.getBooleanExtra("EXTRA_RESULTS_UPDATED",false)){
-                Log.d("EXTRA_RESULTS_UPDATED","EXTRA_RESULTS_UPDATED");
+                Log.d(this.getClass().toString(),"EXTRA_RESULTS_UPDATED");
             }
             List<ScanResult> wifiScanList = wifi.getScanResults();
             String data = "";
             wifis = new String[wifiScanList.size()];
             for (int i = 0; i < wifiScanList.size(); i++) {
-                wifis[i] = (wifiScanList.get(i).SSID) + " " + wifiScanList.get(i).BSSID;
+                wifis[i] = (wifiScanList.get(i).SSID) + "->" + wifiScanList.get(i).BSSID;
             }
             if (wifiScanList.size() > 0) {
                 data = "scanlist > 0";

@@ -21,17 +21,18 @@ import java.util.Set;
  */
 public class APLocation {
 
-    private final int numOfSamples = 5;
+    private final int GRID_X = 3;
+    private final int GRID_Y = 6;
     //Context for application
     Context context;
     //BSSID of ap that is being located
-    private String ap;
+    private List<String> aps;
     //Array of samples to be analyzed
-    private List<Integer> rssiSamples;
+    private HashMap<String,List<Integer>> rssiSamples;
     //Cell that samples are being taken from
     private Vertex currentCell;
     //Array of Samples already recorded
-    private List<Sample> measurements;
+    private HashMap<String, List<Sample>> measurements;
     //Hashmap of possible locations by Sample
     private HashMap<String, Integer> locations;
     //Receiver for apMan Scans
@@ -44,12 +45,12 @@ public class APLocation {
     private Trilateration tri;
 
 
-    public APLocation(Context mContext, String apName){
+    public APLocation(Context mContext, List<String> apNames){
         this.context = mContext;
-        this.ap = apName;
+        aps = new ArrayList<>();
+        setAP(apNames);
         apReciever = new WifiScanReceiver();
         apMan =(WifiManager)context.getSystemService(context.WIFI_SERVICE);
-
         /**
          * public static final String SCAN_RESULTS_AVAILABLE_ACTION
          * Added in API level
@@ -66,14 +67,21 @@ public class APLocation {
          * Constant Value: "resultsUpdated"
          */
 
-        rssiSamples = new ArrayList<>();
-        measurements = new LinkedList<>();
+        rssiSamples = new HashMap<>();
+        resetRSSISamples();
+        measurements = new HashMap<>();
+        for(String ap : aps){
+            measurements.put(ap, new LinkedList<Sample>());
+        }
         tri = new Trilateration();
         locations = new HashMap<>();
     }
 
-    public void setAP(String ap){
-        this.ap = ap;
+    public void setAP(List<String> aps){
+        for(String ap : aps){
+           // Log.d(this.getClass().toString(), ap);
+            this.aps.add(ap);
+        }
     }
 
     public void setSample(boolean sample){
@@ -94,72 +102,83 @@ public class APLocation {
         return null;
     }
 
-    public Vertex changeCell(Vertex cell) {
-        locations = new HashMap<>();
-        if (rssiSamples != null && rssiSamples.size() > 0) {
-            //find mode of rssi samples or lowest sample
-            int rssi = 1000;
-            //get min rssi sample
-            for (int r : rssiSamples) {
-                if (r < rssi) {
-                    rssi = r;
+    public HashMap<String, Vertex> changeCell(Vertex cell) {
+        HashMap<String,Vertex> locs = new HashMap<>();
+        for(String ap : rssiSamples.keySet()) {
+            Log.d(this.getClass().toString(), "changeCell" +cell.getX() + " " + cell.getY());
+            locations = new HashMap<>();
+            List<Integer> samples = rssiSamples.get(ap);
+            if (samples != null && samples.size() > 0) {
+                //find mode of rssi samples or lowest sample
+                int rssi = -1000;
+                //get min rssi sample
+                for (int r : samples) {
+                    if (r > rssi) {
+                        rssi = r;
+                    }
                 }
-            }
-            Sample s = new Sample(rssi, currentCell);
-            //reset rssiSamples
-            rssiSamples = new ArrayList<>();
-            currentCell = cell;
-            measurements.add(s);
-            Sample m[] = measurements.toArray(new Sample[measurements.size()]);
-            for (int i = 0; i < m.length - 1; i++) {
-                for (int j = i + 1; j < m.length; j++) {
-                    Vertex[] vs = tri.findIntersections(m[i], m[j]);
-                    for (int k = 0; k < vs.length; k++) {
-                        if (vs[k] != null) {
-                            String vertex = (int)(vs[k].getX()/s.CELL_SIZE) + " " + (int)(vs[k].getY()/s.CELL_SIZE);
-                            if (!locations.containsKey(vertex)) {
-                                locations.put(vertex, 1);
-                            } else {
-                                locations.put(vertex, locations.get(vertex) + 1);
+                Sample s = new Sample(rssi, currentCell);
+                measurements.get(ap).add(s);
+                Sample m[] = measurements.get(ap).toArray(new Sample[measurements.get(ap).size()]);
+                for (int i = 0; i < m.length - 1; i++) {
+                    for (int j = i + 1; j < m.length; j++) {
+                        Vertex[] vs = tri.findIntersections(m[i], m[j]);
+                        for (int k = 0; k < vs.length; k++) {
+                            if (vs[k] != null) {
+                                int x = (int) (vs[k].getX() / s.CELL_SIZE);
+                                int y = (int) (vs[k].getY() / s.CELL_SIZE);
+                                boolean xInGrid = (x > 0 && x <= GRID_X);
+                                boolean yInGrid = (y > 0 && y <= GRID_Y);
+                                if(xInGrid && yInGrid){
+                                    String vertex = (x) + " " + (y);
+                                    if (!locations.containsKey(vertex)) {
+                                        locations.put(vertex, 1);
+                                    } else {
+                                        locations.put(vertex, locations.get(vertex) + 1);
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }else{
-            currentCell = cell;
-        }
-        if (locations != null && locations.size() > 0) {
-            Set<String> keys = locations.keySet();
+            if (locations != null && locations.size() > 0) {
+                Set<String> keys = locations.keySet();
 
-            String mostLikelyLocation = "";
-            int max = 0;
-            for (String k : keys) {
-                if (locations.get(k) > max) {
-                    mostLikelyLocation = k;
-                    max = locations.get(k);
+                String mostLikelyLocation = "";
+                int max = 0;
+                for (String k : keys) {
+                    if (locations.get(k) > max) {
+                        mostLikelyLocation = k;
+                        max = locations.get(k);
+                    }
+                    Log.d(this.getClass().toString(), k + " " + locations.get(k));
                 }
-                Log.d(this.getClass().toString(),k + " " + locations.get(k));
+                Toast toast = Toast.makeText(context, "Most likely Location " + (mostLikelyLocation), Toast.LENGTH_SHORT);
+                toast.show();
+                Log.d(this.getClass().toString(), "Most likely Location " + mostLikelyLocation);
+
+                locs.put(ap, new Vertex(Double.valueOf(mostLikelyLocation.split(" ")[0]), Double.valueOf(mostLikelyLocation.split(" ")[1])));
             }
-            Toast toast = Toast.makeText(context, "Most likely Location " + (mostLikelyLocation), Toast.LENGTH_SHORT);
-            toast.show();
-            Log.d(this.getClass().toString(), "Most likely Location " + mostLikelyLocation);
-            return new Vertex(Double.valueOf(mostLikelyLocation.split(" ")[0]),Double.valueOf(mostLikelyLocation.split(" ")[1]));
         }
-        return null;
+        currentCell = cell;
+        //reset rssiSamples
+        resetRSSISamples();
+        //Return possible locations.
+        return locs;
     }
 
     private void storeSample(List<ScanResult> wifis){
-        Toast toast = Toast.makeText(context, ap + "  Sample Taken #" + (rssiSamples.size() + 1), Toast.LENGTH_SHORT);
+        Toast toast = Toast.makeText(context, aps + "  Sample Taken #" + (rssiSamples.size() + 1), Toast.LENGTH_SHORT);
         toast.show();
         if(wifis != null && wifis.size() > 0){
             Log.d(this.getClass().toString(), wifis.toString());
             Iterator<ScanResult> wifIter = wifis.iterator();
             while(wifIter.hasNext()){
                 ScanResult s = wifIter.next();
-                if(ap != null && s.BSSID.contentEquals(ap)){
+                if(aps != null && aps.contains(s.BSSID)){
                     Log.d(this.getClass().toString(), s.level + "");
-                    rssiSamples.add(s.level);
+                    rssiSamples.get(s.BSSID).add(s.level);
                 }
             }
         }else{
@@ -170,47 +189,28 @@ public class APLocation {
     public class WifiScanReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
 
-            /**
-             * public boolean getBooleanExtra (String name, boolean defaultValue)
-             * Added in API level 1
-             * Retrieve extended data from the intent.
-             * Parameters
-             * name	String: The name of the desired item.
-             * defaultValue	boolean: the value to be returned if no value of the desired type is stored with the given name.
-             * Returns
-             * boolean	the value of an item that previously added with putExtra() or the default value if none was found.
-             */
-
-            /**
-             * public static final String EXTRA_RESULTS_UPDATED
-             * Added in API level 23
-             * Lookup key for a boolean representing the result of previous startScan() operation, reported with SCAN_RESULTS_AVAILABLE_ACTION.
-             * Constant Value: "resultsUpdated"
-             */
-
-            if(intent.getBooleanExtra("EXTRA_RESULTS_UPDATED",false)){
-
-                Log.d(this.getClass().toString(),"EXTRA_RESULTS_UPDATED");
-
-                if(apMan == null){
-                    Log.d(this.getClass().toString(),"apMan null");
-                }
-
+            if (apMan != null) {
                 List<ScanResult> wifiScanList = apMan.getScanResults();
 
                 String data = "";
-                if(wifiScanList.size() > 0){
+                if (wifiScanList.size() > 0) {
                     Log.d(this.getClass().toString(), "Scan results");
-                    if(sample) {
+                    if (sample) {
                         sample = false;
                         storeSample(wifiScanList);
                     }
-                } else{
+                } else {
                     Log.d(this.getClass().toString(), "no scan results");
                     data = wifiScanList.size() + "";
                 }
             }
-            /*Log.d(this.getClass().toString(), "Received results.");*/
+            Log.d(this.getClass().toString(), "Received results.");
+        }
+    }
+
+    private void resetRSSISamples(){
+        for(String ap : aps){
+            rssiSamples.put(ap, new ArrayList<Integer>());
         }
     }
 }
