@@ -10,6 +10,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -56,6 +57,11 @@ public class MainActivity extends AppCompatActivity {
             wifiPermission = false;
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
         } else{
+            if(!wifi.isWifiEnabled()){
+                Toast toast = Toast.makeText(this, "WiFi must be enabled.", Toast.LENGTH_LONG);
+                toast.show();
+                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+            }
             Log.d(this.getClass().toString(), "Calling get APs");
             getAPs();
         }
@@ -95,6 +101,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
     }
+
+    protected void onStart(){ super.onStart(); }
 
     @Override
     protected void onDestroy() {

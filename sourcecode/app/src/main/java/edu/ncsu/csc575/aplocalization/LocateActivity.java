@@ -26,6 +26,7 @@ public class LocateActivity extends AppCompatActivity {
     List<String> apNames;
     int[] cells;
     final int GRID_SIZE = 18;
+    View previousCell;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -224,14 +225,10 @@ public class LocateActivity extends AppCompatActivity {
     }
 
     private void changeCell(View v,Vertex center){
-        ViewGroup vg = (ViewGroup)v.getParent().getParent();
-        for(int i=0; i< vg.getChildCount(); ++i) {
-            View nextChild = vg.getChildAt(i);
-            for(int j=0; j < ((ViewGroup)nextChild).getChildCount(); j++){
-                View child = ((ViewGroup)nextChild).getChildAt(j);
-                child.setBackgroundResource(R.drawable.cell);
-            }
+        if(previousCell != null){
+            previousCell.setBackgroundResource(R.drawable.scanned_cell);
         }
+        previousCell = v;
         v.setBackgroundColor(Color.parseColor("#000000"));
         HashMap<String, Vertex> apLoc = apl.changeCell(center);
 
@@ -241,7 +238,7 @@ public class LocateActivity extends AppCompatActivity {
                     int x = (int) apLoc.get(ap).getX();
                     int y = (int) apLoc.get(ap).getY();
                     Log.d(this.getClass().toString(),  + x + " " + y);
-                    TextView tv = (TextView) findViewById(cells[((x-1)*3+(y-1))]);
+                    TextView tv = (TextView) findViewById(cells[((x - 1) * 3 + (y - 1))]);
                     tv.setBackgroundResource(R.drawable.ap_cell);
                 }
             }

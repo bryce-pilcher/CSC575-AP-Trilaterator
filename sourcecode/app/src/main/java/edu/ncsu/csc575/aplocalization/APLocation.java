@@ -105,7 +105,6 @@ public class APLocation {
     public HashMap<String, Vertex> changeCell(Vertex cell) {
         HashMap<String,Vertex> locs = new HashMap<>();
         for(String ap : rssiSamples.keySet()) {
-            Log.d(this.getClass().toString(), "changeCell" +cell.getX() + " " + cell.getY());
             locations = new HashMap<>();
             List<Integer> samples = rssiSamples.get(ap);
             if (samples != null && samples.size() > 0) {
