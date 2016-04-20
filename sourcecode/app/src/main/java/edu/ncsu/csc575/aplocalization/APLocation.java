@@ -168,7 +168,7 @@ public class APLocation {
     }
 
     private void storeSample(List<ScanResult> wifis){
-        Toast toast = Toast.makeText(context, aps + "  Sample Taken #" + (rssiSamples.size() + 1), Toast.LENGTH_SHORT);
+        Toast toast = Toast.makeText(context, aps + "  Sample Taken #" + (rssiSamples.get(aps.get(0)).size() + 1), Toast.LENGTH_SHORT);
         toast.show();
         if(wifis != null && wifis.size() > 0){
             Log.d(this.getClass().toString(), wifis.toString());

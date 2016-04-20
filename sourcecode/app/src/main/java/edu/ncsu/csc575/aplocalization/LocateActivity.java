@@ -24,9 +24,10 @@ import java.util.List;
 public class LocateActivity extends AppCompatActivity {
     APLocation apl;
     List<String> apNames;
-    int[] cells;
+    Cell[] cells;
     final int GRID_SIZE = 18;
-    View previousCell;
+    final int GRID_X = 3;
+    final int GRID_Y = 6;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,9 +35,15 @@ public class LocateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_locate);
         apNames = new ArrayList<>();
 
-        cells = new int[]{R.id.c11, R.id.c12, R.id.c13, R.id.c21, R.id.c22, R.id.c23, R.id.c31,
-                R.id.c32, R.id.c33, R.id.c41, R.id.c42, R.id.c43, R.id.c51, R.id.c52, R.id.c53,
-                R.id.c61, R.id.c62, R.id.c63};
+        cells = new Cell[]{new Cell(R.id.c11, new Vertex(1,1)), new Cell(R.id.c12, new Vertex(2,1)),
+                new Cell(R.id.c13, new Vertex(3,1)), new Cell(R.id.c21, new Vertex(1,2)),
+                new Cell(R.id.c22, new Vertex(2,2)), new Cell(R.id.c23, new Vertex(3,2)),
+                new Cell(R.id.c31, new Vertex(1,3)), new Cell(R.id.c32, new Vertex(2,3)),
+                new Cell(R.id.c33, new Vertex(3,3)), new Cell(R.id.c41, new Vertex(1,4)),
+                new Cell(R.id.c42, new Vertex(2,4)), new Cell(R.id.c43, new Vertex(3,4)),
+                new Cell(R.id.c51, new Vertex(1,5)), new Cell(R.id.c52, new Vertex(2,5)),
+                new Cell(R.id.c53, new Vertex(3,5)), new Cell(R.id.c61, new Vertex(1,6)),
+                new Cell(R.id.c62, new Vertex(2,6)), new Cell(R.id.c63, new Vertex(3,6))};
 
         Intent intent = getIntent();
         String names = intent.getStringExtra(MainActivity.AP_NAMES);
@@ -60,6 +67,15 @@ public class LocateActivity extends AppCompatActivity {
                 startSample();
             }
         });
+
+        TextView btn;
+
+        for(int i = 0; i < cells.length; i++){
+                Cell c = cells[i];
+                btn = (TextView) findViewById(c.getId());
+                btn.setOnClickListener(new CellOnClickListener(c));
+        }
+/*
 
         TextView btn=(TextView) findViewById(R.id.c11);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -187,6 +203,9 @@ public class LocateActivity extends AppCompatActivity {
                 changeCell(v, new Vertex(3, 6));
             }
         });
+*/
+
+
     }
 
     private void startSample(){
@@ -224,13 +243,27 @@ public class LocateActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    private void changeCell(View v,Vertex center){
-        if(previousCell != null){
-            previousCell.setBackgroundResource(R.drawable.scanned_cell);
+    private void changeCell(View v, Cell cell){
+
+        cell.setState(cell.SCANNED);
+
+        ViewGroup vg = (ViewGroup)v.getParent().getParent();
+        for(int i=0; i < vg.getChildCount(); i++) {
+            View nextChild = vg.getChildAt(i);
+            for (int j = 0; j < ((ViewGroup) nextChild).getChildCount(); j++) {
+                View child = ((ViewGroup) nextChild).getChildAt(j);
+                Log.d(this.getClass().toString(), i + " " + j  );
+                if(cells[j+(GRID_Y-1-i)*3].getState() == cell.SCANNED){
+                    child.setBackgroundResource(R.drawable.scanned_cell);
+                }else{
+                    child.setBackgroundResource(R.drawable.cell);
+                }
+            }
         }
-        previousCell = v;
+
+
         v.setBackgroundColor(Color.parseColor("#000000"));
-        HashMap<String, Vertex> apLoc = apl.changeCell(center);
+        HashMap<String, Vertex> apLoc = apl.changeCell(cell.getCenter());
 
         if(apLoc != null) {
             for (String ap : apNames) {
@@ -238,8 +271,13 @@ public class LocateActivity extends AppCompatActivity {
                     int x = (int) apLoc.get(ap).getX();
                     int y = (int) apLoc.get(ap).getY();
                     Log.d(this.getClass().toString(),  + x + " " + y);
-                    TextView tv = (TextView) findViewById(cells[((x - 1) * 3 + (y - 1))]);
-                    tv.setBackgroundResource(R.drawable.ap_cell);
+                    Cell apCell = cells[(x-1)*3+(y-1)];
+                    TextView tv = (TextView) findViewById(apCell.getId());
+                    if(apCell.getState() == apCell.SCANNED) {
+                        tv.setBackgroundResource(R.drawable.ap_cell_scanned);
+                    }else{
+                        tv.setBackgroundResource(R.drawable.ap_cell);
+                    }
                 }
             }
         }
@@ -278,4 +316,20 @@ public class LocateActivity extends AppCompatActivity {
             return builder.create();
         }
     }
+
+    public class CellOnClickListener implements View.OnClickListener
+    {
+
+        Cell c;
+        public CellOnClickListener(Cell cell) {
+            this.c = cell;
+        }
+
+        @Override
+        public void onClick(View v)
+        {
+            changeCell(v, c);
+        }
+
+    };
 }
