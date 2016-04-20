@@ -13,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -24,7 +26,8 @@ import java.util.Set;
 public class UserLocateActivity extends AppCompatActivity {
 
 
-
+    private final int GRID_X = 3;
+    private final int GRID_Y = 6;
     String wifis[];
     //Receiver for wifi Scans
     private WifiScanReceiver wifiReciever;
@@ -37,30 +40,62 @@ public class UserLocateActivity extends AppCompatActivity {
     //Hashmap of possible locations by Sample
     private HashMap<String, Integer> locations;
 
+    Cell[] cells;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_locate);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         wifi = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         wifiReciever = new WifiScanReceiver();
         registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         tri = new Trilateration();
         locations = new HashMap<>();
+        apLocs = new HashMap<>();
+        Intent intent = getIntent();
+        String apLocations = intent.getStringExtra(LocateActivity.APS);
+        Log.d(this.getClass().toString(), apLocations);
+        for(String ap : apLocations.split(",")){
+            Log.d(this.getClass().toString(), ap);
+            String vertex = ap.split(">")[1];
+            double x = Double.parseDouble(vertex.split(" ")[0]);
+            double y = Double.parseDouble(vertex.split(" ")[1]);
+            apLocs.put(ap.split(">")[0],new Vertex(x,y));
+        }
+
+        cells = new Cell[]{new Cell(R.id.c11, new Vertex(1,1)), new Cell(R.id.c12, new Vertex(2,1)),
+                new Cell(R.id.c13, new Vertex(3,1)), new Cell(R.id.c21, new Vertex(1,2)),
+                new Cell(R.id.c22, new Vertex(2,2)), new Cell(R.id.c23, new Vertex(3,2)),
+                new Cell(R.id.c31, new Vertex(1,3)), new Cell(R.id.c32, new Vertex(2,3)),
+                new Cell(R.id.c33, new Vertex(3,3)), new Cell(R.id.c41, new Vertex(1,4)),
+                new Cell(R.id.c42, new Vertex(2,4)), new Cell(R.id.c43, new Vertex(3,4)),
+                new Cell(R.id.c51, new Vertex(1,5)), new Cell(R.id.c52, new Vertex(2,5)),
+                new Cell(R.id.c53, new Vertex(3,5)), new Cell(R.id.c61, new Vertex(1,6)),
+                new Cell(R.id.c62, new Vertex(2,6)), new Cell(R.id.c63, new Vertex(3,6))};
+
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                locateUser();
+                locateUser(view);
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    private void locateUser(){
+    private void locateUser(View v){
+        ViewGroup vg = (ViewGroup)v.getParent().getParent();
+        for(int i=0; i < vg.getChildCount(); i++) {
+            View nextChild = vg.getChildAt(i);
+            for (int j = 0; j < ((ViewGroup) nextChild).getChildCount(); j++) {
+                View child = ((ViewGroup) nextChild).getChildAt(j);
+                child.setBackgroundResource(R.drawable.cell);
+            }
+        }
+
         wifi.startScan();
     }
 
@@ -78,7 +113,6 @@ public class UserLocateActivity extends AppCompatActivity {
                 Log.d(this.getClass().toString(), "no scan results");
                 data = wifiScanList.size() + "";
             }
-            //TODO: Populate apLocs from previous phase
             List<Sample> samples = new ArrayList<>();
             for(ScanResult sr : wifiScanList){
                 if(apLocs.containsKey(sr.BSSID))
@@ -90,6 +124,7 @@ public class UserLocateActivity extends AppCompatActivity {
     }
 
     private void locate(List<Sample> samples){
+        locations = new HashMap<>();
         if(samples != null && samples.size() > 0){
             Sample s = samples.get(0);
             Sample m[] = samples.toArray(new Sample[samples.size()]);
@@ -98,11 +133,17 @@ public class UserLocateActivity extends AppCompatActivity {
                     Vertex[] vs = tri.findIntersections(m[i], m[j]);
                     for (int k = 0; k < vs.length; k++) {
                         if (vs[k] != null) {
-                            String vertex = (int)(vs[k].getX()/s.CELL_SIZE) + " " + (int)(vs[k].getY()/s.CELL_SIZE);
-                            if (!locations.containsKey(vertex)) {
-                                locations.put(vertex, 1);
-                            } else {
-                                locations.put(vertex, locations.get(vertex) + 1);
+                            int x = (int) (vs[k].getX() / s.CELL_SIZE);
+                            int y = (int) (vs[k].getY() / s.CELL_SIZE);
+                            boolean xInGrid = (x > 0 && x <= GRID_X);
+                            boolean yInGrid = (y > 0 && y <= GRID_Y);
+                            if(xInGrid && yInGrid) {
+                                String vertex = (x) + " " + (y);
+                                if (!locations.containsKey(vertex)) {
+                                    locations.put(vertex, 1);
+                                } else {
+                                    locations.put(vertex, locations.get(vertex) + 1);
+                                }
                             }
                         }
                     }
@@ -125,7 +166,11 @@ public class UserLocateActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(this, "Most likely Location " + (mostLikelyLocation), Toast.LENGTH_SHORT);
             toast.show();
             Log.d(this.getClass().toString(), "Most likely Location " + mostLikelyLocation);
-            //TODO: highlight the grid the user is in.
+            int x = Integer.parseInt(mostLikelyLocation.split(" ")[0]);
+            int y = Integer.parseInt(mostLikelyLocation.split(" ")[1]);
+            Cell apCell = cells[(x-1)+(y-1)*3];
+            TextView tv = (TextView) findViewById(apCell.getId());
+            tv.setBackgroundResource(R.drawable.ap_cell_scanned);
         }
     }
 

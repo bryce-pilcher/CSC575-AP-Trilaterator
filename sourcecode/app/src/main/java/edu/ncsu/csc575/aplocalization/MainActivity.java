@@ -139,8 +139,6 @@ public class MainActivity extends AppCompatActivity {
                 if (sparseBooleanArray.get(i)) {
                     selected += lv.getItemAtPosition(i).toString() + ",";
                 }
-                Toast toast = Toast.makeText(this, selected, Toast.LENGTH_SHORT);
-                //toast.show();
                 wifi = null;
             }
 

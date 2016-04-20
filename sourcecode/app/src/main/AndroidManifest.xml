@@ -39,12 +39,10 @@
         </activity>
         <activity
             android:name=".UserLocateActivity"
-            android:label="@string/title_activity_user_locate"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:parentActivityName=".LocateActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="edu.ncsu.csc575.aplocalization.MainActivity" />
+                android:value=".LocateActivity" />
         </activity>
     </application>
 

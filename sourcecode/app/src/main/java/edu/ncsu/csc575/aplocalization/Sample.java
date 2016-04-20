@@ -10,7 +10,7 @@ public class Sample {
     int rssi;
     double distance;
     Vertex center;
-    public final int CELL_SIZE = 2;
+    public final int CELL_SIZE = 1;
 
     /**
      * This constructor populates the distance automagically
