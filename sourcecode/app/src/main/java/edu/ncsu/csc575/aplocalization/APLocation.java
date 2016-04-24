@@ -1,5 +1,6 @@
 package edu.ncsu.csc575.aplocalization;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ public class APLocation {
     private final int GRID_Y = 6;
     //Context for application
     Context context;
+
+    Activity activity;
     //BSSID of ap that is being located
     private List<String> aps;
     //Array of samples to be analyzed
@@ -45,8 +49,9 @@ public class APLocation {
     private Trilateration tri;
 
 
-    public APLocation(Context mContext, List<String> apNames){
+    public APLocation(Context mContext, Activity mActivity, List<String> apNames){
         this.context = mContext;
+        this.activity = mActivity;
         aps = new ArrayList<>();
         setAP(apNames);
         apReciever = new WifiScanReceiver();
@@ -102,7 +107,7 @@ public class APLocation {
         return null;
     }
 
-    public HashMap<String, Vertex> changeCell(Vertex cell) {
+    public HashMap<String, Vertex> changeCell(Cell cell) {
         HashMap<String,Vertex> locs = new HashMap<>();
         for(String ap : rssiSamples.keySet()) {
             locations = new HashMap<>();
@@ -118,6 +123,8 @@ public class APLocation {
                 }
                 Sample s = new Sample(rssi, currentCell);
                 measurements.get(ap).add(s);
+                TextView tv = (TextView) activity.findViewById(cell.getId());
+                tv.setText(s.distance + "" );
                 Sample m[] = measurements.get(ap).toArray(new Sample[measurements.get(ap).size()]);
                 for (int i = 0; i < m.length - 1; i++) {
                     for (int j = i + 1; j < m.length; j++) {
@@ -160,7 +167,7 @@ public class APLocation {
                 locs.put(ap, new Vertex(Double.valueOf(mostLikelyLocation.split(" ")[0]), Double.valueOf(mostLikelyLocation.split(" ")[1])));
             }
         }
-        currentCell = cell;
+        currentCell = cell.getCenter();
         //reset rssiSamples
         resetRSSISamples();
         //Return possible locations.

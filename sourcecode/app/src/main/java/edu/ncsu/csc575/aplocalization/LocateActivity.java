@@ -66,7 +66,7 @@ public class LocateActivity extends AppCompatActivity {
 
         Toast toast = Toast.makeText(this, apNames.get(0), Toast.LENGTH_SHORT);
         toast.show();
-        apl = new APLocation(this, apNames);
+        apl = new APLocation(this, this, apNames);
         /*ConfigureGridDialogFragment frag = new ConfigureGridDialogFragment();
         FragmentManager fragmentManager = getFragmentManager();
         frag.show(fragmentManager,"string");*/
@@ -147,7 +147,7 @@ public class LocateActivity extends AppCompatActivity {
 
 
         v.setBackgroundColor(Color.parseColor("#000000"));
-        apLoc = apl.changeCell(cell.getCenter());
+        apLoc = apl.changeCell(cell);
 
         if(apLoc != null) {
             for (String ap : apNames) {
