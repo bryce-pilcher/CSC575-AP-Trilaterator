@@ -27,6 +27,7 @@ public class LocateActivity extends AppCompatActivity {
     public final static String APS = "edu.ncsu.csc575.aplocalization.APNAMES";
     APLocation apl;
     List<String> apNames;
+    HashMap<String,String> ssid;
     Cell[] cells;
     final int GRID_SIZE = 18;
     final int GRID_X = 3;
@@ -38,6 +39,7 @@ public class LocateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_locate);
         apNames = new ArrayList<>();
+        ssid = new HashMap<>();
 
         cells = new Cell[]{new Cell(R.id.c11, new Vertex(1,1)), new Cell(R.id.c12, new Vertex(2,1)),
                 new Cell(R.id.c13, new Vertex(3,1)), new Cell(R.id.c21, new Vertex(1,2)),
@@ -53,7 +55,10 @@ public class LocateActivity extends AppCompatActivity {
         String names = intent.getStringExtra(MainActivity.AP_NAMES);
 
         for(String name : names.split(",")){
-            apNames.add(name.split(">")[1]);
+            String netName = name.split("->")[0];
+            String bssid = name.split("->")[1];
+            apNames.add(bssid);
+            ssid.put(bssid,netName);
         }
 
         Toast toast = Toast.makeText(this, apNames.get(0), Toast.LENGTH_SHORT);
@@ -126,11 +131,14 @@ public class LocateActivity extends AppCompatActivity {
             View nextChild = vg.getChildAt(i);
             for (int j = 0; j < ((ViewGroup) nextChild).getChildCount(); j++) {
                 View child = ((ViewGroup) nextChild).getChildAt(j);
-                if(cells[j+(GRID_Y-1-i)*3].getState() == cell.SCANNED){
+                int cellLoc = j+(GRID_Y-1-i)*3;
+                if(cells[cellLoc].getState() == cell.SCANNED){
                     child.setBackgroundResource(R.drawable.scanned_cell);
                 }else{
                     child.setBackgroundResource(R.drawable.cell);
                 }
+                TextView tv = (TextView) findViewById(cells[cellLoc].getId());
+                tv.setText("");
             }
         }
 
@@ -151,6 +159,8 @@ public class LocateActivity extends AppCompatActivity {
                     }else{
                         tv.setBackgroundResource(R.drawable.ap_cell);
                     }
+                    String locatedSSID = tv.getText().equals("") ? ssid.get(ap) : tv.getText() + " " + ssid.get(ap);
+                    tv.setText(locatedSSID);
                 }
             }
         }
