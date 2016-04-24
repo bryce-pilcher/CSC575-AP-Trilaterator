@@ -8,132 +8,235 @@
         android:layout_height="0dp"
         android:layout_weight="1" >
         <TextView
-            android:id="@+id/c61"
+            android:id="@+id/c16"
             android:text=""
             android:background="@drawable/cell"
             android:padding="3dp"
             android:layout_height="match_parent" />
         <TextView
-            android:id="@+id/c62"
+            android:id="@+id/c26"
             android:text=""
             android:background="@drawable/cell"
             android:padding="3dp"
             android:layout_height="match_parent" />
         <TextView
-            android:id="@+id/c63"
+            android:id="@+id/c36"
             android:text=""
             android:background="@drawable/cell"
             android:padding="3dp"
             android:layout_height="match_parent"/>
-    </TableRow>
-    <TableRow
-        android:layout_height="0dp"
-        android:layout_weight="1" >
         <TextView
-            android:id="@+id/c51"
+            android:id="@+id/c46"
             android:text=""
             android:background="@drawable/cell"
             android:padding="3dp"
             android:layout_height="match_parent" />
         <TextView
-            android:id="@+id/c52"
+            android:id="@+id/c56"
             android:text=""
             android:background="@drawable/cell"
             android:padding="3dp"
             android:layout_height="match_parent" />
         <TextView
-            android:id="@+id/c53"
+            android:id="@+id/c66"
             android:text=""
             android:background="@drawable/cell"
             android:padding="3dp"
             android:layout_height="match_parent"/>
-    </TableRow>
-    <TableRow
-        android:layout_height="0dp"
-        android:layout_weight="1" >
-        <TextView
-            android:id="@+id/c41"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c42"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c43"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent"/>
-    </TableRow>
-    <TableRow
-        android:layout_height="0dp"
-        android:layout_weight="1" >
-        <TextView
-            android:id="@+id/c31"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c32"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c33"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent"/>
-    </TableRow>
-    <TableRow
-        android:layout_height="0dp"
-        android:layout_weight="1" >
-        <TextView
-            android:id="@+id/c21"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c22"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c23"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent"/>
-    </TableRow>
-    <TableRow
-        android:layout_height="0dp"
-        android:layout_weight="1" >
-        <TextView
-            android:id="@+id/c11"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c12"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:id="@+id/c13"
-            android:text=""
-            android:background="@drawable/cell"
-            android:padding="3dp"
-            android:layout_height="match_parent"/>
-    </TableRow>
+    </TableRow><TableRow
+    android:layout_height="0dp"
+    android:layout_weight="1" >
+    <TextView
+        android:id="@+id/c15"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c25"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c35"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+    <TextView
+        android:id="@+id/c45"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c55"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c65"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+</TableRow><TableRow
+    android:layout_height="0dp"
+    android:layout_weight="1" >
+    <TextView
+        android:id="@+id/c14"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c24"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c34"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+    <TextView
+        android:id="@+id/c44"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c54"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c64"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+</TableRow><TableRow
+    android:layout_height="0dp"
+    android:layout_weight="1" >
+    <TextView
+        android:id="@+id/c13"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c23"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c33"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+    <TextView
+        android:id="@+id/c43"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c53"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c63"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+</TableRow><TableRow
+    android:layout_height="0dp"
+    android:layout_weight="1" >
+    <TextView
+        android:id="@+id/c12"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c22"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c32"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+    <TextView
+        android:id="@+id/c42"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c52"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c62"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+</TableRow><TableRow
+    android:layout_height="0dp"
+    android:layout_weight="1" >
+    <TextView
+        android:id="@+id/c11"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c21"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c31"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+    <TextView
+        android:id="@+id/c41"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c51"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent" />
+    <TextView
+        android:id="@+id/c61"
+        android:text=""
+        android:background="@drawable/cell"
+        android:padding="3dp"
+        android:layout_height="match_parent"/>
+</TableRow>
     </TableLayout>

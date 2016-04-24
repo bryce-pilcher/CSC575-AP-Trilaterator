@@ -21,7 +21,7 @@ import java.util.Set;
  */
 public class APLocation {
 
-    private final int GRID_X = 3;
+    private final int GRID_X = 6;
     private final int GRID_Y = 6;
     //Context for application
     Context context;

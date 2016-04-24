@@ -29,8 +29,8 @@ public class LocateActivity extends AppCompatActivity {
     List<String> apNames;
     HashMap<String,String> ssid;
     Cell[] cells;
-    final int GRID_SIZE = 18;
-    final int GRID_X = 3;
+    final int GRID_SIZE = 36;
+    final int GRID_X = 6;
     final int GRID_Y = 6;
     HashMap<String, Vertex> apLoc;
 
@@ -41,15 +41,18 @@ public class LocateActivity extends AppCompatActivity {
         apNames = new ArrayList<>();
         ssid = new HashMap<>();
 
-        cells = new Cell[]{new Cell(R.id.c11, new Vertex(1,1)), new Cell(R.id.c12, new Vertex(2,1)),
-                new Cell(R.id.c13, new Vertex(3,1)), new Cell(R.id.c21, new Vertex(1,2)),
-                new Cell(R.id.c22, new Vertex(2,2)), new Cell(R.id.c23, new Vertex(3,2)),
-                new Cell(R.id.c31, new Vertex(1,3)), new Cell(R.id.c32, new Vertex(2,3)),
-                new Cell(R.id.c33, new Vertex(3,3)), new Cell(R.id.c41, new Vertex(1,4)),
-                new Cell(R.id.c42, new Vertex(2,4)), new Cell(R.id.c43, new Vertex(3,4)),
-                new Cell(R.id.c51, new Vertex(1,5)), new Cell(R.id.c52, new Vertex(2,5)),
-                new Cell(R.id.c53, new Vertex(3,5)), new Cell(R.id.c61, new Vertex(1,6)),
-                new Cell(R.id.c62, new Vertex(2,6)), new Cell(R.id.c63, new Vertex(3,6))};
+        cells = new Cell[]{new Cell(R.id.c11, new Vertex(1,1)), new Cell(R.id.c21, new Vertex(2,1)), new Cell(R.id.c31, new Vertex(3,1)),
+                new Cell(R.id.c41, new Vertex(4,1)), new Cell(R.id.c51, new Vertex(5,1)), new Cell(R.id.c61, new Vertex(6,1)),
+                new Cell(R.id.c12, new Vertex(1,2)), new Cell(R.id.c22, new Vertex(2,2)), new Cell(R.id.c32, new Vertex(3,2)),
+                new Cell(R.id.c42, new Vertex(4,2)), new Cell(R.id.c52, new Vertex(5,2)), new Cell(R.id.c62, new Vertex(6,2)),
+                new Cell(R.id.c13, new Vertex(1,3)), new Cell(R.id.c23, new Vertex(2,3)), new Cell(R.id.c33, new Vertex(3,1)),
+                new Cell(R.id.c43, new Vertex(4,3)), new Cell(R.id.c53, new Vertex(5,3)), new Cell(R.id.c63, new Vertex(6,1)),
+                new Cell(R.id.c14, new Vertex(1,4)), new Cell(R.id.c24, new Vertex(2,4)), new Cell(R.id.c34, new Vertex(3,4)),
+                new Cell(R.id.c44, new Vertex(4,4)), new Cell(R.id.c54, new Vertex(5,4)), new Cell(R.id.c64, new Vertex(6,4)),
+                new Cell(R.id.c15, new Vertex(1,5)), new Cell(R.id.c25, new Vertex(2,5)), new Cell(R.id.c35, new Vertex(3,5)),
+                new Cell(R.id.c45, new Vertex(4,5)), new Cell(R.id.c55, new Vertex(5,5)), new Cell(R.id.c65, new Vertex(6,5)),
+                new Cell(R.id.c16, new Vertex(1,6)), new Cell(R.id.c26, new Vertex(2,6)), new Cell(R.id.c36, new Vertex(3,6)),
+                new Cell(R.id.c46, new Vertex(4,6)), new Cell(R.id.c56, new Vertex(5,6)), new Cell(R.id.c66, new Vertex(6,6))};
 
         Intent intent = getIntent();
         String names = intent.getStringExtra(MainActivity.AP_NAMES);
@@ -131,7 +134,7 @@ public class LocateActivity extends AppCompatActivity {
             View nextChild = vg.getChildAt(i);
             for (int j = 0; j < ((ViewGroup) nextChild).getChildCount(); j++) {
                 View child = ((ViewGroup) nextChild).getChildAt(j);
-                int cellLoc = j+(GRID_Y-1-i)*3;
+                int cellLoc = j+(GRID_Y-1-i)*GRID_X;
                 if(cells[cellLoc].getState() == cell.SCANNED){
                     child.setBackgroundResource(R.drawable.scanned_cell);
                 }else{
@@ -152,7 +155,7 @@ public class LocateActivity extends AppCompatActivity {
                     int x = (int) apLoc.get(ap).getX();
                     int y = (int) apLoc.get(ap).getY();
                     Log.d(this.getClass().toString(),  + x + " " + y);
-                    Cell apCell = cells[(x-1)+(y-1)*3];
+                    Cell apCell = cells[(x-1)+(y-1)*GRID_X];
                     TextView tv = (TextView) findViewById(apCell.getId());
                     if(apCell.getState() == apCell.SCANNED) {
                         tv.setBackgroundResource(R.drawable.ap_cell_scanned);
