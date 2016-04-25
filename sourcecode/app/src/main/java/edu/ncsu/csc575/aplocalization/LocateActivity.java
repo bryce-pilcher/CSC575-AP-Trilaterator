@@ -140,7 +140,7 @@ public class LocateActivity extends AppCompatActivity {
                     child.setBackgroundResource(R.drawable.cell);
                 }
                 TextView tv = (TextView) findViewById(cells[cellLoc].getId());
-                tv.setText("");
+                tv.setText(cells[cellLoc].getDistToAPs());
             }
         }
 

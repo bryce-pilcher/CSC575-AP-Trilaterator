@@ -46,6 +46,8 @@ public class APLocation {
     //class to locate ap
     private Trilateration tri;
 
+    private Cell currentCell;
+
 
     public APLocation(Context mContext, Activity mActivity, List<String> apNames){
         this.context = mContext;
@@ -54,6 +56,7 @@ public class APLocation {
         setAP(apNames);
         apReciever = new WifiScanReceiver();
         apMan =(WifiManager)context.getSystemService(context.WIFI_SERVICE);
+        currentCell = null;
         /**
          * public static final String SCAN_RESULTS_AVAILABLE_ACTION
          * Added in API level
@@ -107,7 +110,6 @@ public class APLocation {
 
     public HashMap<String, Vertex> changeCell(Cell cell) {
         HashMap<String,Vertex> locs = new HashMap<>();
-        Cell currentCell = null;
         for(String ap : rssiSamples.keySet()) {
             locations = new HashMap<>();
             List<Integer> samples = rssiSamples.get(ap);
