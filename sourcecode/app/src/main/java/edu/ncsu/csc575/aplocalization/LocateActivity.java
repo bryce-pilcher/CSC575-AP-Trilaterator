@@ -24,7 +24,6 @@ import java.util.List;
 
 public class LocateActivity extends AppCompatActivity {
 
-    public final static String APS = "edu.ncsu.csc575.aplocalization.APNAMES";
     APLocation apl;
     List<String> apNames;
     HashMap<String,String> ssid;
@@ -169,12 +168,6 @@ public class LocateActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_locate, menu);
-        return true;
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -184,18 +177,6 @@ public class LocateActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
-        }
-
-        if(id == R.id.action_locate_user){
-            Intent intent = new Intent(getApplicationContext(), UserLocateActivity.class);
-            String apLocations = "";
-            for(String k : apLoc.keySet()){
-                apLocations += k + ">" + apLoc.get(k).toString() + ",";
-            }
-            apLocations = apLocations.substring(0,apLocations.lastIndexOf(","));
-            Log.d(this.getClass().toString(), apLocations);
-            intent.putExtra(APS,apLocations);
-            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

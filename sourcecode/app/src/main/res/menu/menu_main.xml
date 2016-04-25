@@ -8,6 +8,11 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_locate_user"
+        android:orderInCategory="100"
+        android:title="@string/action_locate_user"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_localize"
         android:orderInCategory="100"
         android:title="@string/action_localize"

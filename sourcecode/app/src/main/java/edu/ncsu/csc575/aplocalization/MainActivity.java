@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     public final static String AP_NAMES = "edu.ncsu.csc575.aplocalization.APNAMES";
     private boolean wifiPermission = true;
     ListView lv;
-    String wifis[];
+    List<String> wifis;
     //Receiver for wifi Scans
     private WifiScanReceiver wifiReciever;
     //Wifi Manager for starting scans and getting results.
@@ -142,8 +143,35 @@ public class MainActivity extends AppCompatActivity {
                 wifi = null;
             }
 
-            intent.putExtra(AP_NAMES, selected);
-            startActivity(intent);
+            if(selected.equals("")){
+                Toast toast = Toast.makeText(this, "Please choose at least one AP", Toast.LENGTH_LONG);
+                toast.show();
+            }else {
+                intent.putExtra(AP_NAMES, selected);
+                startActivity(intent);
+            }
+        }
+
+        if(id == R.id.action_locate_user){
+            Intent intent = new Intent(getApplicationContext(), UserLocateActivity.class);
+            lv.getCheckedItemPositions();
+            String selected = "";
+            int countChoice = lv.getCount();
+
+            SparseBooleanArray sparseBooleanArray = lv.getCheckedItemPositions();
+            for (int i = 0; i < countChoice; i++) {
+                if (sparseBooleanArray.get(i)) {
+                    selected += lv.getItemAtPosition(i).toString() + ",";
+                }
+                wifi = null;
+            }
+            if(selected.equals("")){
+                Toast toast = Toast.makeText(this, "Please choose at least one AP", Toast.LENGTH_LONG);
+                toast.show();
+            }else {
+                intent.putExtra(AP_NAMES, selected);
+                startActivity(intent);
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -215,9 +243,11 @@ public class MainActivity extends AppCompatActivity {
             }
             List<ScanResult> wifiScanList = wifi.getScanResults();
             String data = "";
-            wifis = new String[wifiScanList.size()];
+            wifis = new ArrayList<>();
             for (int i = 0; i < wifiScanList.size(); i++) {
-                wifis[i] = (wifiScanList.get(i).SSID) + "->" + wifiScanList.get(i).BSSID;
+                if(!wifiScanList.get(i).SSID.contains("ncsu") && !wifiScanList.get(i).SSID.contains("eduroam")) {
+                    wifis.add((wifiScanList.get(i).SSID) + "->" + wifiScanList.get(i).BSSID);
+                }
             }
             if (wifiScanList.size() > 0) {
                 data = "scanlist > 0";

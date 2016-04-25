@@ -33,8 +33,6 @@ public class APLocation {
     private List<String> aps;
     //Array of samples to be analyzed
     private HashMap<String,List<Integer>> rssiSamples;
-    //Cell that samples are being taken from
-    private Vertex currentCell;
     //Array of Samples already recorded
     private HashMap<String, List<Sample>> measurements;
     //Hashmap of possible locations by Sample
@@ -109,6 +107,7 @@ public class APLocation {
 
     public HashMap<String, Vertex> changeCell(Cell cell) {
         HashMap<String,Vertex> locs = new HashMap<>();
+        Cell currentCell = null;
         for(String ap : rssiSamples.keySet()) {
             locations = new HashMap<>();
             List<Integer> samples = rssiSamples.get(ap);
@@ -121,10 +120,9 @@ public class APLocation {
                         rssi = r;
                     }
                 }
-                Sample s = new Sample(rssi, currentCell);
+                Sample s = new Sample(rssi, currentCell.getCenter());
+                currentCell.addDistToAPs(s.distance);
                 measurements.get(ap).add(s);
-                TextView tv = (TextView) activity.findViewById(cell.getId());
-                tv.setText(s.distance + "" );
                 Sample m[] = measurements.get(ap).toArray(new Sample[measurements.get(ap).size()]);
                 for (int i = 0; i < m.length - 1; i++) {
                     for (int j = i + 1; j < m.length; j++) {
@@ -167,7 +165,11 @@ public class APLocation {
                 locs.put(ap, new Vertex(Double.valueOf(mostLikelyLocation.split(" ")[0]), Double.valueOf(mostLikelyLocation.split(" ")[1])));
             }
         }
-        currentCell = cell.getCenter();
+        if(currentCell != null){
+            TextView tv = (TextView) activity.findViewById(currentCell.getId());
+            tv.setText(currentCell.getDistToAPs());
+        }
+        currentCell = cell;
         //reset rssiSamples
         resetRSSISamples();
         //Return possible locations.
