@@ -201,7 +201,7 @@ public class UserLocateActivity extends AppCompatActivity {
             Log.d(this.getClass().toString(), "Most likely Location " + mostLikelyLocation);
             int x = Integer.parseInt(mostLikelyLocation.split(" ")[0]);
             int y = Integer.parseInt(mostLikelyLocation.split(" ")[1]);
-            Cell apCell = cells[(x-1)+(y-1)*3];
+            Cell apCell = cells[(x-1)+(y-1)*GRID_X  ];
             TextView tv = (TextView) findViewById(apCell.getId());
             tv.setBackgroundResource(R.drawable.ap_cell_scanned);
         }
