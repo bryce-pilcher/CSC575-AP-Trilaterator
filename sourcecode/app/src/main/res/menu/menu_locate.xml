@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="edu.ncsu.csc575.aplocalization.MainActivity">
+    tools:context="edu.ncsu.csc575.aplocalization.LocateActivity">
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
@@ -11,10 +11,5 @@
         android:id="@+id/action_locate_user"
         android:orderInCategory="100"
         android:title="@string/action_locate_user"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_localize"
-        android:orderInCategory="100"
-        android:title="@string/action_localize"
         app:showAsAction="always" />
 </menu>
