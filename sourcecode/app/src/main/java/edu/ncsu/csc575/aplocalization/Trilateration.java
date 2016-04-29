@@ -3,7 +3,7 @@ package edu.ncsu.csc575.aplocalization;
 import android.util.Log;
 
 /**
- * Created by Bryce on 4/6/2016.
+ * This class handles the trilateration algorithm.
  */
 public class Trilateration {
 

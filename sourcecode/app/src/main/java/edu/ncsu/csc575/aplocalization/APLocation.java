@@ -19,24 +19,40 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by Bryce on 4/7/2016.
+ * This class handles all of the logic for locating an AP.  It has a method that is triggered
+ * by the scan button press to perform the scanning and store the samples.  It has another method
+ * that handles changing cells and calculating the real time location of any AP being located.
  */
 public class APLocation {
 
+    //The size of the Grid in x and y coordinates
+    //Used for making sure intersections fall in measurable space
     private final int GRID_X = 6;
     private final int GRID_Y = 6;
-    //Context for application
-    Context context;
 
+    //Context and activity for application
+    //Used to display messages or change the gui
+    Context context;
     Activity activity;
-    //BSSID of ap that is being located
+
+    //List of BSSID (MAC Addresses) of aps that are being located
     private List<String> aps;
-    //Array of samples to be analyzed
+
+    //Hashmap of samples to be analyzed
+    //Key: BSSID of ap
+    //Value: list of RSSI levels
     private HashMap<String,List<Integer>> rssiSamples;
-    //Array of Samples already recorded
+
+    //Hashmap of Samples already recorded
+    //Key: BSSID of AP
+    //Value: list of Samples
     private HashMap<String, List<Sample>> measurements;
+
     //Hashmap of possible locations by Sample
+    //Key: String represenation of x, y coordinates of cell
+    //Value: number of votes
     private HashMap<String, Integer> locations;
+
     //Receiver for apMan Scans
     private WifiScanReceiver apReciever;
     //Wifi Manager for starting scans and getting results.
@@ -46,32 +62,27 @@ public class APLocation {
     //class to locate ap
     private Trilateration tri;
 
+    //Current cell for which calculation is being computed
     private Cell currentCell;
 
 
+    /**
+     * Constructor which initializes values and registers receivers
+     * @param mContext LocateActivity context for registering receiver
+     * @param mActivity LocateActivity activity for changing gui and toasts
+     * @param apNames List of AP names to locate
+     */
     public APLocation(Context mContext, Activity mActivity, List<String> apNames){
         this.context = mContext;
         this.activity = mActivity;
         aps = new ArrayList<>();
         setAP(apNames);
         apReciever = new WifiScanReceiver();
+        //Getting wifi context to scan and get results
         apMan =(WifiManager)context.getSystemService(context.WIFI_SERVICE);
         currentCell = null;
-        /**
-         * public static final String SCAN_RESULTS_AVAILABLE_ACTION
-         * Added in API level
-         * An access point scan has completed, and results are available from the supplicant. Call
-         * getScanResults() to obtain the results. EXTRA_RESULTS_UPDATED indicates if the scan was
-         * completed successfully.
-         * Constant Value: "android.net.wifi.SCAN_RESULTS"
-         */
+        //Register receiver for wifi scan results
         context.registerReceiver(apReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        /**
-         * public static final String EXTRA_RESULTS_UPDATED
-         * Added in API level 23
-         * Lookup key for a boolean representing the result of previous startScan() operation, reported with SCAN_RESULTS_AVAILABLE_ACTION.
-         * Constant Value: "resultsUpdated"
-         */
 
         rssiSamples = new HashMap<>();
         resetRSSISamples();
@@ -85,7 +96,6 @@ public class APLocation {
 
     public void setAP(List<String> aps){
         for(String ap : aps){
-           // Log.d(this.getClass().toString(), ap);
             this.aps.add(ap);
         }
     }
@@ -94,6 +104,11 @@ public class APLocation {
         this.sample = sample;
     }
 
+    /**
+     * This method is used by the lifecycle management in LocateActivity to
+     * unregister the receiver when it into certain states.
+     * @param mContext
+     */
     public void unregisterReceiver(Context mContext) {
         Log.d(this.getClass().toString(), "Unregistering apReceiver");
         context.unregisterReceiver(apReciever);
@@ -108,35 +123,56 @@ public class APLocation {
         return null;
     }
 
+    /**
+     * The method handles the logic of finding the max RSSI, feeding the location
+     * class with samples, and figuring out which location is the best.
+     * @param cell the cell that has just been switched to, which will be calculated for next call
+     * @return A mapping of AP BSSIDs to the most likely location.
+     */
     public HashMap<String, Vertex> changeCell(Cell cell) {
         HashMap<String,Vertex> locs = new HashMap<>();
+        //Each AP's results need to be processed separately.
         for(String ap : rssiSamples.keySet()) {
             locations = new HashMap<>();
+            //Get the samples that correspond to current ap
             List<Integer> samples = rssiSamples.get(ap);
+
+
             if (samples != null && samples.size() > 0) {
-                //find mode of rssi samples or lowest sample
                 int rssi = -1000;
-                //get min rssi sample
+                //Find the max rssi sample (the one that is least negative)
                 for (int r : samples) {
                     if (r > rssi) {
                         rssi = r;
                     }
                 }
+                //Use that max RSSI to create a new sample
                 Sample s = new Sample(rssi, currentCell.getCenter());
+                //This adds the distance calculated via path loss to the cell to be displayed in the
+                //gui :)
                 currentCell.addDistToAPs(s.distance);
                 measurements.get(ap).add(s);
+
                 Sample m[] = measurements.get(ap).toArray(new Sample[measurements.get(ap).size()]);
+                //These two for-loops run through the array of samples and
+                //submit each pair to the trilateration findIntersections function
                 for (int i = 0; i < m.length - 1; i++) {
                     for (int j = i + 1; j < m.length; j++) {
+                        //Send each pair to findIntersections
                         Vertex[] vs = tri.findIntersections(m[i], m[j]);
+                        //For the Intersections returned, check them and store them
                         for (int k = 0; k < vs.length; k++) {
                             if (vs[k] != null) {
+                                //Convert the location to an x and y coordinate of cell
                                 int x = (int) (vs[k].getX() / s.CELL_SIZE);
                                 int y = (int) (vs[k].getY() / s.CELL_SIZE);
+                                //Check to make sure they are in the grid.
                                 boolean xInGrid = (x > 0 && x <= GRID_X);
                                 boolean yInGrid = (y > 0 && y <= GRID_Y);
+                                //If they are both in the grid, store in hashmap as possible location
                                 if(xInGrid && yInGrid){
                                     String vertex = (x) + " " + (y);
+                                    //If the location has not been seen before, initialize it.
                                     if (!locations.containsKey(vertex)) {
                                         locations.put(vertex, 1);
                                     } else {
@@ -148,12 +184,16 @@ public class APLocation {
                     }
                 }
             }
+            //If we have some possible locations, we need to figure out which
+            //location has the most votes.
             if (locations != null && locations.size() > 0) {
                 Set<String> keys = locations.keySet();
 
                 String mostLikelyLocation = "";
                 int max = 0;
+                //Grab all the keys and use them to iterate through the hashmap
                 for (String k : keys) {
+                    //find the location with the max votes
                     if (locations.get(k) > max) {
                         mostLikelyLocation = k;
                         max = locations.get(k);
@@ -164,6 +204,7 @@ public class APLocation {
                 toast.show();
                 Log.d(this.getClass().toString(), "Most likely Location " + mostLikelyLocation);
 
+                //put the location in a Hashmap keyed by the corresponding AP
                 locs.put(ap, new Vertex(Double.valueOf(mostLikelyLocation.split(" ")[0]), Double.valueOf(mostLikelyLocation.split(" ")[1])));
             }
         }
@@ -178,6 +219,11 @@ public class APLocation {
         return locs;
     }
 
+    /**
+     * This method stores RSSI value that we want to keep.  This is necessary because the wifi scan
+     * sometimes returns extra results that we want to ignore.
+     * @param wifis list of scan results.
+     */
     private void storeSample(List<ScanResult> wifis){
         Toast toast = Toast.makeText(context, aps + "  Sample Taken #" + (rssiSamples.get(aps.get(0)).size() + 1), Toast.LENGTH_SHORT);
         toast.show();
@@ -186,6 +232,8 @@ public class APLocation {
             Iterator<ScanResult> wifIter = wifis.iterator();
             while(wifIter.hasNext()){
                 ScanResult s = wifIter.next();
+                //If the ap is the one we are looking for, save the RSSI value to the
+                //hashmap keyed by BSSID.
                 if(aps != null && aps.contains(s.BSSID)){
                     Log.d(this.getClass().toString(), s.level + "");
                     rssiSamples.get(s.BSSID).add(s.level);
@@ -196,6 +244,10 @@ public class APLocation {
         }
     }
 
+    /**
+     * This class receives the intent from the wifi scan when it returns.
+     * and handles storing samples if we want to collect one
+     */
     public class WifiScanReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
 
@@ -205,6 +257,7 @@ public class APLocation {
                 String data = "";
                 if (wifiScanList.size() > 0) {
                     Log.d(this.getClass().toString(), "Scan results");
+                    //If this is a sample we want to store, store it
                     if (sample) {
                         sample = false;
                         storeSample(wifiScanList);
@@ -218,6 +271,9 @@ public class APLocation {
         }
     }
 
+    /**
+     * Resets the RSSI Samples Hashmap for use within a new cell.
+     */
     private void resetRSSISamples(){
         for(String ap : aps){
             rssiSamples.put(ap, new ArrayList<Integer>());

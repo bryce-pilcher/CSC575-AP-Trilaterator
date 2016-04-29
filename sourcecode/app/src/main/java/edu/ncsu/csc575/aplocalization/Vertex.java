@@ -1,7 +1,7 @@
 package edu.ncsu.csc575.aplocalization;
 
 /**
- * Created by Bryce on 4/6/2016.
+ * Class to be used as a holder for x and y coordinates
  */
 public class Vertex {
     double x;
